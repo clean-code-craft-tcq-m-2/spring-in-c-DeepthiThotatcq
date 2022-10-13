@@ -1,8 +1,45 @@
+#ifndef _STATS_H
+#define _STATS_H
 
-struct Stats compute_statistics(const float* numberset, int setlength);
+#include <vector>
 
-typedef void (*alerter_funcptr)();
-void check_and_alert(float maxThreshold, alerter_funcptr alerters[], struct Stats computedStats);
+// ==== Statistics ====
 
-extern int emailAlertCallCount;
-extern int ledAlertCallCount;
+namespace Statistics {
+    class Stats{
+        public:
+        float average = 0; 
+        float max = 0; 
+        float min = 0;
+    };
+    
+    Stats ComputeStatistics(const std::vector<float>& );
+    float CalculateAverage(const std::vector<float>& );
+    float GetMin(const std::vector<float>& values);
+    float GetMax(const std::vector<float>& values);
+    void  NanReturn(Stats& stats);
+}
+
+// ==== Alerts ====
+
+namespace Alerts{
+    class IAlerter
+    {
+        public:
+            virtual ~IAlerter() {};
+            virtual void SetAlert(bool) = 0;
+    };
+
+    class EmailAlert: public IAlerter
+    {
+        public:
+            bool emailSent = false;
+
+            virtual void SetAlert(bool setAlert){
+                emailSent = setAlert;
+            }
+    };
+
+    class LEDAlert: public IAlerter
+    {
+        public:
