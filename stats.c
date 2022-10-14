@@ -1,64 +1,55 @@
 #include "stats.h"
+#include "alerts.h"
 
-// ==== Statistics ====
-
-Statistics::Stats Statistics::ComputeStatistics(const std::vector<float>& values) {
-    //Implement statistics here
-    Stats retVal;
-    if(!values.empty()){
-        retVal.average = CalculateAverage(values);
-        retVal.max = GetMax(values);
-        retVal.min = GetMin(values);
+int emailAlertCallCount = 0;
+int ledAlertCallCount = 0;
+/*
+* @brief    To calculate the Average, min and max values of the given array.
+* @param    numberset : float type array pointer.
+            setlength : array length.
+* @return   Stats : result to be stored and return in structure type.
+*/
+struct Stats compute_statistics(const float* numberset, int setlength) {
+    struct Stats s = {0.0,0.0,0.0};
+    
+    if(setlength == 0)
+    {
+        s.average = NAN;
+        s.min = NAN;
+        s.max = NAN;
     }
-    else{
-        NanReturn(retVal);
-    }
-    return retVal;
-}
-
-float Statistics::CalculateAverage(const std::vector<float>& values){
-    float sum = 0.0;
-    float elementCount = 0.0;
-    for(float i: values){
-         sum += i;
-         elementCount += 1.0;
-    }
-    return sum/elementCount;
-}
-
-float Statistics::GetMin(const std::vector<float>& values){
-    float min = values[0];
-    for(float i:values){
-        min = min<i? min : i;
-    }
-    return min;
-}
-
-float Statistics::GetMax(const std::vector<float>& values){
-    float max = 0;
-    for(float i:values){
-        max = max<i? i : max;
-    }
-    return max;
-}
-
-void Statistics::NanReturn(Stats& stats){
-    stats.average = 1;
-    stats.min = 1;
-    stats.max = 1;
-}
-
-// ==== Alerts ====
-
-void Alerts::StatsAlerter::checkAndAlert(const std::vector<float>& data){
-    if(Statistics::GetMax(data) > mThreshold){
-        for(IAlerter *alerter: mAlerters){
-            alerter->SetAlert(true);
+    else
+    {
+        s.min = numberset[0];
+        s.max = numberset[0];
+        /*Update Min and max Value*/
+        for(int i = 0; i < setlength; i++)
+        {
+            /*For average*/
+            s.average += numberset[i];
+            /*For minimum */
+            if(s.min > numberset[i])
+            {
+                s.min = numberset[i];
+            }
+            /*For Maximum */
+            if(s.max < numberset[i])
+            {
+                s.max = numberset[i];
+            }
         }
+        
+        s.average = (s.average/setlength);
     }
-    else{
-        for(IAlerter *alerter: mAlerters){
-            alerter->SetAlert(false);
-        }
+    
+    return s;
+}
+
+void check_and_alert(float maxThreshold, alerter_funcptr alerters[], struct Stats computedStats)
+{
+    if(computedStats.max > maxThreshold)
+    {
+        (*alerters[0])();
+        (*alerters[1])();
     }
 }
