@@ -1,55 +1,75 @@
 #include "stats.h"
-#include "alerts.h"
+
+void swap(float *xp, float *yp)
+{
+    float temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+
+struct Stats compute_statistics(const float* numberset, int setlength) {
+    struct Stats s;
+    s.average = 0;
+    s.min = 0;
+    s.max = 0;
+
+    int index = 0;
+    int i,j,k;
+    int count = 0;
+    float add = 0.0;
+    float numset[setlength-1];
+    
+    for(count=0; count<setlength;count++)
+    {
+        numset[count] = numberset[count]; 
+    }
+
+    for(k=0;k<setlength;k++)
+    {
+        add = add + numset[k];
+    }
+
+    s.average = (float) add/ setlength;   
+
+    for (i=0;i<setlength-1;i++)
+    {
+        index=i;
+        for (j=i+1;j<setlength;j++)
+        {
+            if (numset[j]<numset[index])
+            {
+                index=j;
+            }
+        }
+
+        swap(&numset[index], &numset[i]);  
+    }
+    s.max = numset[setlength-1];           
+    s.min = numset[0];                         
+
+
+    return s;   // added Missing return Value
+}
 
 int emailAlertCallCount = 0;
 int ledAlertCallCount = 0;
-/*
-* @brief    To calculate the Average, min and max values of the given array.
-* @param    numberset : float type array pointer.
-            setlength : array length.
-* @return   Stats : result to be stored and return in structure type.
-*/
-struct Stats compute_statistics(const float* numberset, int setlength) {
-    struct Stats s = {0.0,0.0,0.0};
-    
-    if(setlength == 0)
-    {
-        s.average = NAN;
-        s.min = NAN;
-        s.max = NAN;
-    }
-    else
-    {
-        s.min = numberset[0];
-        s.max = numberset[0];
-        /*Update Min and max Value*/
-        for(int i = 0; i < setlength; i++)
-        {
-            /*For average*/
-            s.average += numberset[i];
-            /*For minimum */
-            if(s.min > numberset[i])
-            {
-                s.min = numberset[i];
-            }
-            /*For Maximum */
-            if(s.max < numberset[i])
-            {
-                s.max = numberset[i];
-            }
-        }
-        
-        s.average = (s.average/setlength);
-    }
-    
-    return s;
+
+
+void emailAlerter(void)
+{
+    emailAlertCallCount++;
+}
+
+void ledAlerter(void)
+{
+    ledAlertCallCount++;
 }
 
 void check_and_alert(float maxThreshold, alerter_funcptr alerters[], struct Stats computedStats)
 {
-    if(computedStats.max > maxThreshold)
+    if(computedStats.max > maxThreshold )
     {
-        (*alerters[0])();
-        (*alerters[1])();
+        alerters[0]();
+        alerters[1]();
     }
 }
