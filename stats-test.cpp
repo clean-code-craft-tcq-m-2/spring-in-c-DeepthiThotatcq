@@ -2,7 +2,6 @@
 
 #include "catch.hpp"
 #include "stats.h"
-#include "alerts.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -23,9 +22,7 @@ TEST_CASE("average is NaN for empty array") {
     //NAN (not-a-number), as defined in math.h
     
     //Design the REQUIRE statement here.
-    REQUIRE(computedStats.average != computedStats.average);
-    REQUIRE(computedStats.max != computedStats.max);
-    REQUIRE(computedStats.min != computedStats.min);
+    REQUIRE(isnanf(computedStats.average));
     //Use https://stackoverflow.com/questions/1923837/how-to-use-nan-and-inf-in-c
 }
 
@@ -43,6 +40,7 @@ TEST_CASE("raises alerts when max is greater than threshold") {
 
     // need a way to check if both emailAlerter, ledAlerter were called
     // you can define call-counters along with the functions, as shown below
+   
     REQUIRE(emailAlertCallCount == 1);
     REQUIRE(ledAlertCallCount == 1);
 }
